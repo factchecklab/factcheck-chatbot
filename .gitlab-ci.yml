@@ -1,0 +1,83 @@
+stages:
+  - test
+  - build
+  - deploy
+
+test:
+  stage: test
+  image: node:lts
+  before_script:
+    - yarn install
+  script:
+    - yarn lint
+    - yarn test --passWithNoTests
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+  except:
+    - schedules
+
+audit:
+  stage: test
+  image: node:lts
+  before_script:
+    - yarn install
+  script:
+    - yarn audit
+  allow_failure: true
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}
+    paths:
+      - node_modules/
+
+build_image:
+  image: docker:19.03.1
+  stage: build
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: on_success
+  services:
+    - docker:19.03.1-dind
+  variables:
+    BUILD_IMAGE_TAG: $CI_REGISTRY_IMAGE:build-$CI_COMMIT_REF_SLUG
+    GCR_IMAGE_TAG: $GCR_IMAGE:git-$CI_COMMIT_SHORT_SHA
+    GITLAB_IMAGE_TAG: $CI_REGISTRY_IMAGE:git-$CI_COMMIT_SHORT_SHA
+    DOCKER_BUILDKIT: 1
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker login -u _json_key --password-stdin $GCR_REGISTRY < "$GOOGLE_SERVICE_ACCOUNT_CREDENTIALS"
+  script:
+    - |
+      docker build -t $BUILD_IMAGE_TAG -f Dockerfile.production \
+        --cache-from node:12-slim \
+        --cache-from $CI_REGISTRY_IMAGE:build-master \
+        --cache-from $BUILD_IMAGE_TAG \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        .
+    - docker push $BUILD_IMAGE_TAG
+    - docker tag $BUILD_IMAGE_TAG $GITLAB_IMAGE_TAG
+    - docker push $GITLAB_IMAGE_TAG
+    - docker tag $BUILD_IMAGE_TAG $GCR_IMAGE_TAG
+    - docker push $GCR_IMAGE_TAG
+
+deploy:
+  image: dtzar/helm-kubectl:3.2.1
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "master"'
+      when: manual
+  environment:
+    name: master
+    kubernetes:
+      namespace: factchecklab
+  before_script:
+    - helm dep build chart
+  script:
+    - |
+      helm upgrade -n "$KUBE_NAMESPACE" "$HELM_RELEASE_NAME" chart \
+        --install \
+        --atomic \
+        --set image.tag="git-$CI_COMMIT_SHORT_SHA" \
+        --set image.repository="$GCR_IMAGE" \
+        --values "$HELM_UPGRADE_VALUES_FILE"
