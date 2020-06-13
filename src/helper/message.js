@@ -12,11 +12,24 @@ function parseFallbackURL(url) {
 function parseContentFromCtx(ctx) {
   const { event } = ctx;
   if (event.isText) {
-    return {
-      data: event.text,
-      forceCreate: false,
-      cancelCreate: false,
-    };
+    // Test if the text is an URL
+    if (!event.text.match(/^(https?|ftp):\/\/[^\\s/$.?#].[^\\s]*$/)) {
+      return {
+        message: event.text,
+        url: null,
+        forceCreate: false,
+        cancelCreate: false,
+        logFeedback: false,
+      };
+    } else {
+      return {
+        message: null,
+        url: event.text,
+        forceCreate: false,
+        cancelCreate: false,
+        logFeedback: false,
+      };
+    }
   } else if (event.isFallback) {
     // TODO (samueltangz): Support other platforms apart from Facebook.
 
@@ -31,28 +44,50 @@ function parseContentFromCtx(ctx) {
     // }
 
     return {
-      data: parseFallbackURL(event.fallback.payload.url),
+      message: null,
+      url: parseFallbackURL(event.fallback.payload.url),
       forceCreate: false,
       cancelCreate: false,
+      logFeedback: false,
     };
   } else if (event.isPayload) {
-    if (!ctx.state.report || !ctx.state.report.pendingCreate) {
+    if (!ctx.state.topic || !ctx.state.topic.pendingCreate) {
       throw new UnsupportedMessageTypeError();
     }
     switch (event.payload) {
       default:
         throw new UnsupportedMessageTypeError();
-      case 'CreateReport':
+      case 'CreateTopic':
         return {
-          data: ctx.state.report.data,
+          message: ctx.state.topic.message,
+          url: ctx.state.topic.url,
           forceCreate: true,
           cancelCreate: false,
+          logFeedback: false,
         };
-      case 'CancelCreateReport':
+      case 'CancelCreateTopic':
         return {
-          data: ctx.state.report.data,
+          message: ctx.state.topic.message,
+          url: ctx.state.topic.url,
           forceCreate: false,
           cancelCreate: true,
+          logFeedback: false,
+        };
+      case 'CorrectResponseFeedback':
+        return {
+          message: ctx.state.topic.message,
+          url: ctx.state.topic.url,
+          forceCreate: false,
+          cancelCreate: true,
+          logFeedback: true,
+        };
+      case 'IncorrectResponseFeedback':
+        return {
+          message: ctx.state.topic.message,
+          url: ctx.state.topic.url,
+          forceCreate: true,
+          cancelCreate: false,
+          logFeedback: true,
         };
     }
   } else {
@@ -73,16 +108,15 @@ function headerFromConclusion(conclusion) {
   }
 }
 
-// Builds a response text from topic
-function fromTopic(topic) {
-  const { conclusion } = topic;
-  const response = topic.responses[0].content;
+// Builds a response text from a fact check report
+function fromReport(report) {
+  const { conclusion, summary, fullReportUrl } = report;
   const header = headerFromConclusion(conclusion);
-  return `${header}\n${response}`;
+  return `${header}\n${summary}\n詳見：${fullReportUrl}`;
 }
 
 module.exports = {
   parseContentFromCtx,
-  fromTopic,
+  fromReport,
   UnsupportedMessageTypeError,
 };

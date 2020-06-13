@@ -7,48 +7,52 @@ const gql = require('graphql-tag');
 
 dotenv.config();
 
-const client = new ApolloClient({
-  link: createHttpLink({
-    uri: process.env.MAAT_FCDB_GRAPHQL_ENDPOINT,
-    fetch,
+const client = {
+  editorial: new ApolloClient({
+    link: createHttpLink({
+      uri: process.env.FACTCHECKLAB_EDITORIAL_GRAPHQL_ENDPOINT,
+      fetch,
+    }),
+    cache: new InMemoryCache(),
   }),
-  cache: new InMemoryCache(),
-});
+  facts: new ApolloClient({
+    link: createHttpLink({
+      uri: process.env.FACTCHECKLAB_FACTS_GRAPHQL_ENDPOINT,
+      fetch,
+    }),
+    cache: new InMemoryCache(),
+  }),
+};
 
-async function similarTopics(content) {
-  const { data } = await client.query({
+async function searchRelatedReports(originalMessage, originalUrl) {
+  const { data } = await client.facts.query({
     query: gql`
-      query SimilarTopics($content: String) {
-        similarTopics(content: $content) {
-          id
-          title
-          createdAt
-          updatedAt
-          conclusion
-          responses {
-            content
-            __typename
+      query SearchRelatedReports($originalMessage: String, $originalUrl: URL) {
+        searchRelatedReports(
+          originalMessage: $originalMessage
+          originalUrl: $originalUrl
+        ) {
+          nodes {
+            summary
+            conclusion
+            fullReportUrl
           }
-          coverImage {
-            url
-            __typename
-          }
-          __typename
         }
       }
     `,
-    variables: { content },
+    variables: { originalMessage, originalUrl },
   });
-  const similarTopics = data.similarTopics || [];
-  return similarTopics;
+  const { searchRelatedReports = {} } = data;
+  const { nodes = [] } = searchRelatedReports;
+  return nodes;
 }
 
-async function createReport(content) {
-  await client.mutate({
+async function submitTopic(message, url) {
+  await client.editorial.mutate({
     mutation: gql`
-      mutation createReport($input: CreateReportInput!) {
-        createReport(input: $input) {
-          report {
+      mutation submitTopic($input: SubmitTopicInput!) {
+        submitTopic(input: $input) {
+          submittedTopic {
             id
           }
         }
@@ -56,15 +60,14 @@ async function createReport(content) {
     `,
     variables: {
       input: {
-        content,
-        // TODO (samueltangz): change this source
-        source: 'chatbot',
+        message,
+        url,
       },
     },
   });
 }
 
 module.exports = {
-  similarTopics,
-  createReport,
+  searchRelatedReports,
+  submitTopic,
 };
