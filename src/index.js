@@ -32,7 +32,7 @@ module.exports = async function App(context) {
       return;
     }
     if (content.cancelCreate) {
-      await context.sendText('感謝您使用 Factcheck Lab。');
+      await context.sendText('感謝您使用事實查核小助手。');
       context.setState(DEFAULT_STATE);
       return;
     }
@@ -80,7 +80,7 @@ module.exports = async function App(context) {
     } else {
       console.error(err);
       await context.sendText(
-        `Factcheck Lab 繁忙中，閣下可到 ${process.env.FACTCHECKLAB_CONTENT_URI} 查找有關的事實查證報告。`
+        `事實查核小助手繁忙中，閣下可到 ${process.env.FACTCHECKLAB_CONTENT_URI} 查找有關的事實查證報告。`
       );
     }
   }
