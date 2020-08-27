@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2020 tech@factchecklab <tech@factchecklab.org>
+
+SPDX-License-Identifier: AGPL-3.0-or-later
+-->
+
 This project was bootstrapped with
 [Bottender](https://github.com/Yoctol/bottender) init script.
 

@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2020 tech@factchecklab <tech@factchecklab.org>
+//
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
 const fetch = require('node-fetch');
 const { ApolloClient } = require('apollo-boost');
 const { InMemoryCache } = require('apollo-cache-inmemory');
