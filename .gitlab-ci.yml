@@ -31,6 +31,15 @@ audit:
     paths:
       - node_modules/
 
+license:
+  stage: test
+  image:
+    name: fsfe/reuse
+    entrypoint: [""]
+  script:
+    - reuse lint
+  allow_failure: true
+
 build_image:
   image: docker:19.03.1
   stage: build

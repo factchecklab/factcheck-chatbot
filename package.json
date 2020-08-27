@@ -1,6 +1,11 @@
 {
   "name": "factcheck-chatbot",
   "version": "0.1.0",
+  "author": {
+    "name": "tech@factchecklab",
+    "email": "tech@factchecklab.org"
+  },
+  "license": "AGPL-3.0-or-later",
   "private": true,
   "scripts": {
     "dev": "bottender dev",

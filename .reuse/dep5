@@ -1,0 +1,12 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: facts-api
+Upstream-Contact: tech@factchecklab <tech@factchecklab.org>
+Source: https://gitlab.com/factchecklab/facts-api
+
+Files: .*.example .*ignore .babelrc package.json yarn.lock .gitlab-ci.yml .editorconfig .prettierrc
+Copyright: 2020 tech@factchecklab <tech@factchecklab.org>
+License: AGPL-3.0-or-later
+
+Files: chart/*
+Copyright: 2020 tech@factchecklab <tech@factchecklab.org>
+License: AGPL-3.0-or-later
