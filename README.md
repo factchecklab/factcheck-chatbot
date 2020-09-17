@@ -4,13 +4,13 @@ SPDX-FileCopyrightText: 2020 tech@factchecklab <tech@factchecklab.org>
 SPDX-License-Identifier: AGPL-3.0-or-later
 -->
 
+# Factcheck Chatbot
+
+The chatbot can be used by the public to search for related fact check reports
+and to submit potential misinformation.
+
 This project was bootstrapped with
 [Bottender](https://github.com/Yoctol/bottender) init script.
-
-## Sending Feedback
-
-Always feel free to open an issue to
-[Bottender](https://github.com/Yoctol/bottender/issues) repository.
 
 ## Configuration
 
@@ -61,8 +61,22 @@ Runs the linter rules using [Eslint](https://eslint.org/).
 
 Runs the test cases using [Jest](https://jestjs.io/).
 
-## Learn More
 
-To learn Bottender, check out the [Bottender documentation](https://bottender.js.org/docs/en/getting-started).
+## Contributing
 
-For more examples, see [Bottender examples](https://github.com/Yoctol/bottender/tree/master/examples).
+We welcome contributions to our projects! You can ask questions or [file a bug
+report](https://gitlab.com/factchecklab/factcheck-chatbot/-/issues/new) by
+creating an issue on GitLab. To contribute, fork this repository on
+GitLab and create a merge request.
+
+## Getting Help
+
+If you have questions, [file an issue](https://gitlab.com/factchecklab/factcheck-chatbot/-/issues/new)
+in our repository on GitLab, you can
+also contact us at [tech@factchecklab.org](mailto:tech@factchecklab.org).
+
+## Copyright & License
+
+Copyright (c) 2020 tech@factchecklab.
+
+The source code is licensed under Affero General Public License Version 3.
